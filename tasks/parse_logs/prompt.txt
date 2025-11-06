@@ -1,0 +1,22 @@
+You are an ML engineer. Your task is to analyze a training log file to find the best-performing model checkpoint.
+
+The log file is located at `data/train.log`.
+
+You must:
+1.  Read the `data/train.log` file.
+2.  Parse ONLY the lines that start with `[EPOCH_SUMMARY]`. Ignore all other lines.
+3.  Find the epoch that has the **lowest `val_loss`**.
+4.  Create a new file named `results.json` in the current directory.
+5.  This JSON file must contain the following information for that single best epoch:
+    * `best_epoch` (as an integer)
+    * `train_loss` (as a float)
+    * `val_loss` (as a float)
+
+For example, if Epoch 10 was best, the file might look like:
+{
+    "best_epoch": 10,
+    "train_loss": 0.25,
+    "val_loss": 0.12
+}
+
+You have access to standard filesystem tools (like `read_file`, `write_file`) and a Python interpreter.

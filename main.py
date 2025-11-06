@@ -3,6 +3,8 @@ import json
 from contextlib import redirect_stdout
 from io import StringIO
 from typing import Any, Callable, TypedDict
+import os
+from tasks.parse_logs.grader import check_solution
 
 from anthropic import AsyncAnthropic
 from anthropic.types import MessageParam, ToolUnionParam
@@ -162,29 +164,31 @@ async def run_single_test(
     prompt: str,
     tools: list[ToolUnionParam],
     tool_handlers: dict[str, Callable[..., Any]],
-    expected_answer: Any,
     verbose: bool = False,
-) -> tuple[int, bool, Any]:
+) -> tuple[int, bool, str]:  
     if verbose:
         print(f"\n\n{'=' * 20} RUN {run_id}/{num_runs} {'=' * 20}")
 
-    result = await run_agent_loop(
+    result_file = "results.json"
+    if os.path.exists(result_file):
+        os.remove(result_file)
+   
+    await run_agent_loop(
         prompt=prompt,
         tools=tools,
         tool_handlers=tool_handlers,
-        max_steps=5,
+        max_steps=5,  
         verbose=verbose,
     )
 
-    success = result == expected_answer
-
+    success, message = check_solution()
+   
     if success:
-        print(f"✓ Run {run_id}: SUCCESS - Got {result}")
+        print(f"✓ Run {run_id}: SUCCESS - {message}")
     else:
-        print(f"✗ Run {run_id}: FAILURE - Got {result}, expected {expected_answer}")
+        print(f"✗ Run {run_id}: FAILURE - {message}")
 
-    return run_id, success, result
-
+    return run_id, success, message  # <-- Return the grader's message
 
 async def main(concurrent: bool = True):
     tools: list[ToolUnionParam] = [
@@ -196,7 +200,7 @@ async def main(concurrent: bool = True):
                 "properties": {
                     "expression": {
                         "type": "string",
-                        "description": "Will be passed to exec(). Use print() to output something. Returns stdout. ",
+                        "description": "Will be passed to exec(). Use print() to output something. Returns stdout. You can use this to read/write files and run logic.",
                     }
                 },
                 "required": ["expression"],
@@ -218,16 +222,21 @@ async def main(concurrent: bool = True):
         "submit_answer": submit_answer_tool,
     }
 
-    # Run the test 10 times and track success rate
-    num_runs = 10
-    expected_answer = 8769
-    prompt = "Calculate (2^10 + 3^5) * 7 - 100. Use the python_expression tool and then submit the answer."
+    try:
+        with open("tasks/parse_logs/prompt.txt", 'r') as f:
+            prompt = f.read()
+    except FileNotFoundError:
+        print("Error: `tasks/parse_logs/prompt.txt` not found.")
+        print("Please make sure your files are in the correct directory structure.")
+        return
+
+    num_runs = 10  # Run the test 10 times
+    
 
     execution_mode = "concurrently" if concurrent else "sequentially"
-    print(f"Running {num_runs} test iterations {execution_mode}...")
+    print(f"Running task 'parse_logs' {num_runs} times {execution_mode}...")
     print("=" * 60)
 
-    # Create all test coroutines
     tasks = [
         run_single_test(
             run_id=i + 1,
@@ -235,39 +244,36 @@ async def main(concurrent: bool = True):
             prompt=prompt,
             tools=tools,
             tool_handlers=tool_handlers,
-            expected_answer=expected_answer,
-            verbose=False,
+            verbose=False,  
         )
         for i in range(num_runs)
     ]
-
-    # Run concurrently or sequentially based on the flag
     if concurrent:
-        # Process results as they complete
         results = []
         for coro in asyncio.as_completed(tasks):
             result = await coro
             results.append(result)
     else:
-        # Run sequentially by awaiting each task in order
         results = []
         for task in tasks:
             result = await task
             results.append(result)
 
     # Count successes
-    successes = sum(1 for _, success, _ in results)
+    successes = sum(1 for _, success, _ in results if success)
 
-    # Calculate and display pass rate
     pass_rate = (successes / num_runs) * 100
     print(f"\n{'=' * 60}")
-    print("Test Results:")
+    print("Test Results for 'parse_logs':")
     print(f"  Passed: {successes}/{num_runs}")
     print(f"  Failed: {num_runs - successes}/{num_runs}")
     print(f"  Pass Rate: {pass_rate:.1f}%")
     print(f"{'=' * 60}")
 
-
+    result_file = "results.json"
+    if os.path.exists(result_file):
+        os.remove(result_file)
+   
 if __name__ == "__main__":
     # Set to True for concurrent execution, False for sequential execution
-    asyncio.run(main(concurrent=True))
+    asyncio.run(main(concurrent=False))
