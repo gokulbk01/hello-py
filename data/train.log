@@ -1,8 +1,29 @@
-
-Random log line
-[EPOCH_SUMMARY] Epoch 1: train_loss: 0.5 val_loss: 0.4
-[EPOCH_SUMMARY] Epoch 2: train_loss: 0.4 val_loss: 0.3
-[EPOCH_SUMMARY] Epoch 3: train_loss: 0.3 val_loss: 0.2
-[EPOCH_SUMMARY] Epoch 4: train_loss: 0.2 val_loss: 0.15
-[EPOCH_SUMMARY] Epoch 5: train_loss: 0.1 val_loss: 0.1
-Random log line
+[INFO] Starting training run...
+[CONFIG] batch_size: 64
+[CONFIG] learning_rate: 1e-4
+[SYSTEM] Using device: cuda
+Epoch 1, Step 100/500: train_loss=0.88
+Epoch 1, Step 200/500: train_loss=0.75
+Epoch 1, Step 300/500: train_loss=0.62
+Epoch 1, Step 400/500: train_loss=0.55
+Epoch 1, Step 500/500: train_loss=0.51
+[EPOCH_SUMMARY] Epoch 1: train_loss = 0.52, val_loss = 0.45
+Epoch 2, Step 100/500: train_loss=0.40
+Epoch 2, Step 200/500: train_loss=0.35
+...
+Epoch 2, Step 500/500: train_loss=0.31
+[EPOCH_SUMMARY] Epoch 2: train_loss = 0.32, val_loss = 0.25
+Epoch 3, Step 100/500: train_loss=0.24
+[ERROR] Dataloader worker crashed, restarting...
+Epoch 3, Step 200/500: train_loss=0.22
+Epoch 3, Step 300/500: train_loss=0.23
+Epoch 3, Step 400/500: train_loss=0.21
+Epoch 3, Step 500/500: train_loss=0.22
+[EPOCH_SUMMARY] Epoch 3: train_loss = 0.22, val_loss = 0.15
+Epoch 4, Step 100/500: train_loss=0.18
+Epoch 4, Step 200/500: train_loss=0.15
+Epoch 4, Step 300/500: train_loss=0.14
+Epoch 4, Step 400/500: train_loss=0.12
+Epoch 4, Step 500/500: train_loss=0.11
+[EPOCH_SUMMARY] Epoch 4: train_loss = 0.12, val_loss = 0.18
+[INFO] Training finished.
